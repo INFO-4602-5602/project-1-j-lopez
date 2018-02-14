@@ -1,42 +1,60 @@
 <html>
 <head>
 <title>Project 0</title>
-<style type="text/css" href="project0.css"></style>
+<link rel="stylesheet" type="text/css" href="project1.css"></link>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <!--Put your D3 import statement between these two lines-->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
 <!--Put your D3 import statement between these two lines-->
 </head>
 
 <body>
 	<div id="partOne">
         <h1>Part One: </h1>
-        I've made a change!
 	</div>
-    
+
     <div id="partTwo">
         <h1>Part Two: </h1>
-        <div id="barchart">
-        </div>
-	</div>
-    
-    <div id="partThree">
-        <h1>Part Three &amp; Four: </h1>
         <div id="scatterplot">
             <p id="scatterLabel"></p>
         </div>
 	</div>
-    
+
+    <div id="partThree">
+        <h1>Part Three &amp; Four: </h1>
+        <div id="linegraph">
+        </div>
+	</div>
+
     <div id="partFive">
         <h1>Part Five: </h1>
         <div id="scatterplotSet">
         </div>
 	</div>
-    
+
     <script type="text/javascript">
         // Put your part one code here ***********************
 
-        
+        d3.csv("data/anscombe_I.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+        });
+
+        d3.csv("data/anscombe_II.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+        });
+
+        d3.csv("data/anscombe_III.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+        });
+
+        d3.csv("data/anscombe_IV.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+        });
+
         // Leave this to test your data uploading. All data uploading should be above this line
         function checkDataset(dataset) {
             if (dataset.length == 11)
@@ -44,13 +62,166 @@
             else
                 $("#partOne").append("<p>data loaded incorrectly. Try using the debugger to help you find the bug!</p>");
         }
-        
+
         // Put your part two code here ***********************
-        
+
+        var vals = ['x', 'y']; // List of data attributes
+        var xVal = vals[0]; // Value to plot on x-axis
+        var yVal = vals[1]; // Value to plot on y-axis
+
+
+        // set the dimensions and margins of the graph
+        var margin = {top:20, right: 20, bottom: 30, left: 50};
+        var width = 480 - margin.left - margin.right;
+        var height = 250 - margin.top - margin.bottom;
+
+        // set the ranges
+        var x = d3.scaleLinear().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+
+        // append the svg obgect to the body of the page
+        // appends a 'group' element to 'svg'
+        // moves the 'group' element to the top left margin
+        var svg = d3.select("#scatterplot").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+ width + "," + height + ")");
+
+        d3.csv("data/anscombe_I.csv", function(error, data){
+            if (error) throw error;
+
+            data.forEach(function(d){
+                d[xVal] = +d[xVal];
+                d[yVal] = +d[yVal];
+            });
+
+            // Scale the range of the data. We already did this in pixel space, we need to make it in domain space
+            x.domain(d3.extent(data, function(d) {return d[xVal];}));
+            y.domain([0, d3.max(data, function(d) {return d[yVal];})]);
+
+            // Add the scatterplot points
+            svg.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("r", 5)
+                .attr("cx", function(d) {return x(d[xVal]);})
+                .attr("cy", function(d) {return y(d[yVal]);})
+                .attr("fill","blue");
+
+            // Add the X Axis
+            svg.append("g")
+                .attr("transform", "translate(0, " + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add the Y Axis
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            //Add text labels
+            var xLabel = svg.append("text")
+                .attr("class", "label")
+                .text(xVal)
+                .attr("x", width - 20)
+                .attr("y", height - 10);
+
+            var yLabel = svg.append("text")
+                .attr("class", "label")
+                .text(yVal)
+                .attr("y", -10)
+                .attr("transform", "rotate(90)")
+                .style("text-anchor", "start");
+
+        });
+
         // Put your part three & four code here ***********************
-        
+
+        // append the svg obgect to the body of the page
+        // appends a 'group' element to 'svg'
+        // moves the 'group' element to the top left margin
+        var svg1 = d3.select("#linegraph").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+
+        d3.csv("data/anscombe_I.csv", function(error, data){
+            if (error) throw error;
+
+            data.forEach(function(d){
+                d[xVal] = +d[xVal];
+                d[yVal] = +d[yVal];
+            });
+
+            data.sort(function(a,b){
+                return d3.ascending(a.x, b.x);
+            });
+
+            var line = d3.line() // Credit to https://bl.ocks.org/mbostock/3883245
+                .x(function(d) { return x(d[xVal]); })
+                .y(function(d) { return y(d[yVal]); });
+
+            // Scale the range of the data. We already did this in pixel space, we need to make it in domain space
+            x.domain(d3.extent(data, function(d) {return d[xVal];}));
+            y.domain([0, d3.max(data, function(d) {return d[yVal];})]);
+
+            // Add the line graph points. Credit to https://bl.ocks.org/mbostock/3883245
+            svg1.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 1.5)
+                .attr("d", line);
+
+            svg1.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("r", 5)
+                .attr("cx", function(d) {return x(d[xVal]);})
+                .attr("cy", function(d) {return y(d[yVal]);})
+                .attr("fill","blue")
+                .on("click", function(d) {
+                    d3.select("#scatterLabel").text("X value: " + d[xVal] + " Y value: " + d[yVal]);
+                })
+                .on("mouseover", function(){
+                    d3.select(this).attr("fill", "red")
+                })
+                .on("mouseout", function(){
+                    d3.select(this).attr("fill", "blue")
+                });
+
+            // Add the X Axis
+            svg1.append("g")
+                .attr("transform", "translate(0, " + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add the Y Axis
+            svg1.append("g")
+                .call(d3.axisLeft(y));
+
+            //Add text labels
+            var xLabel = svg1.append("text")
+                .attr("class", "label")
+                .text(xVal)
+                .attr("x", width - 20)
+                .attr("y", height - 10);
+
+            var yLabel = svg1.append("text")
+                .attr("class", "label")
+                .text(yVal)
+                .attr("y", -10)
+                .attr("transform", "rotate(90)")
+                .style("text-anchor", "start");
+
+
+        //function handleMouseOver()
         // Put your part five code here ***********************
-        
+
     </script>
 </body>
 
