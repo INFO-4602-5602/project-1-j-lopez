@@ -72,8 +72,8 @@
 
         // set the dimensions and margins of the graph
         var margin = {top:20, right: 20, bottom: 30, left: 50};
-        var width = 480 - margin.left - margin.right;
-        var height = 250 - margin.top - margin.bottom;
+        var width = 360 - margin.left - margin.right;
+        var height = 200 - margin.top - margin.bottom;
 
         // set the ranges
         var x = d3.scaleLinear().range([0, width]);
@@ -86,7 +86,7 @@
             .attr("width",  width + margin.left + margin.right)
             .attr("height", height+ margin.top  + margin.bottom)
             .append("g")
-            .attr("transform", "translate("+ width + "," + height + ")");
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
 
         d3.csv("data/anscombe_I.csv", function(error, data){
             if (error) throw error;
@@ -220,8 +220,116 @@
 
         });
 
-        //function handleMouseOver()
         // Put your part five code here ***********************
+
+        var chart1 = d3.select("#scatterplotSet").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+        var chart2 = d3.select("#scatterplotSet").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+        var chart3 = d3.select("#scatterplotSet").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+        var chartBlank = d3.select("#scatterplotSet").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+        var chart4 = d3.select("#scatterplotSet").append("svg")
+            .attr("width",  width + margin.left + margin.right)
+            .attr("height", height+ margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("+margin.left + "," + margin.top + ")");
+
+        SVG_write("data/anscombe_I.csv", chart1);
+        SVG_write("data/anscombe_II.csv", chart2);
+        SVG_write("data/anscombe_III.csv", chart3);
+        SVG_write("data/anscombe_IV.csv", chart4);
+
+        function SVG_write(csvName, chartNum) {
+
+            var vals = ['x', 'y']; // List of data attributes
+            var xVal = vals[0]; // Value to plot on x-axis
+            var yVal = vals[1]; // Value to plot on y-axis
+
+
+            // set the dimensions and margins of the graph
+            var margin = {top: 20, right: 20, bottom: 30, left: 50};
+            var width = 480 - margin.left - margin.right;
+            var height = 250 - margin.top - margin.bottom;
+
+            // set the ranges
+            var x = d3.scaleLinear().range([0, width]);
+            var y = d3.scaleLinear().range([height, 0]);
+
+            d3.csv(csvName, function (error, data) {
+                if (error) throw error;
+
+                data.forEach(function (d) {
+                    d[xVal] = +d[xVal];
+                    d[yVal] = +d[yVal];
+                });
+
+                // Scale the range of the data. We already did this in pixel space, we need to make it in domain space
+                x.domain(d3.extent(data, function (d) {
+                    return d[xVal];
+                }));
+                y.domain([0, d3.max(data, function (d) {
+                    return d[yVal];
+                })]);
+
+                // Add the scatterplot points
+                chartNum.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("r", 5)
+                    .attr("cx", function (d) {
+                        return x(d[xVal]);
+                    })
+                    .attr("cy", function (d) {
+                        return y(d[yVal]);
+                    })
+                    .attr("fill", "blue");
+
+                // Add the X Axis
+                chartNum.append("g")
+                    .attr("transform", "translate(0, " + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add the Y Axis
+                chartNum.append("g")
+                    .call(d3.axisLeft(y));
+
+                //Add text labels
+                var xLabel = chartNum.append("text")
+                    .attr("class", "label")
+                    .text(xVal)
+                    .attr("x", width - 20)
+                    .attr("y", height - 10);
+
+                var yLabel = chartNum.append("text")
+                    .attr("class", "label")
+                    .text(yVal)
+                    .attr("y", -10)
+                    .attr("transform", "rotate(90)")
+                    .style("text-anchor", "start");
+            });
+        }
+
+
+
 
     </script>
 </body>
