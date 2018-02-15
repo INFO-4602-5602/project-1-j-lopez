@@ -3,6 +3,13 @@ body {
     font-size: 11px;
 }
 
+#tophalf {
+    float: left;
+}
+#bottomhalf {
+    float: left;
+}
+
 .axis path,
 .axis line {
     fill: none;
@@ -11,7 +18,7 @@ body {
 }
 
 .point {
-    fill: #f00; 
+    fill: #f00;
     stroke: #000;
 }
 
